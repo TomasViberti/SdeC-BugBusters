@@ -217,7 +217,7 @@ Utilizando los datos de la tarea **Timed Linux Kernel Compilation**, realizamos 
 
 ### 1. Comparativa de Rendimiento
 * **Intel Core i5-13600K**: $72 \pm 5$ seg.
-* **AMD Ryzen 9 5900X**: $76 \pm 8$ seg.
+* **AMD Ryzen 9 5900X**: $76 \pm 8$ seg. 
 
 A simple vista, podemos decir que el i5 13600K tiene mejor rendimiento para compilar el Kernel de Linux. Si hacemos la comparativa utilizando la fórmula:
 
@@ -231,3 +231,44 @@ Si utilizamos un RYzen 9 7950X 16 core, para el cual el tiempo es de 50 +/- 6 se
 $$S = \frac{T_{viejo}}{T_{nuevo}} = \frac{76s}{50s} = 1.52$$
 
 > **Resultado:** El Ryzen 9 7950X (16 core) ofrece una aceleración de **1.52x**, lo que significa que es un **52% más rápido** que el modelo 5900X 12 core.
+
+# Tiempo de programa según variación de frecuencia
+
+Se desea ejecutar sobre una ESP32 un código que demore alrededor de 10 segundos para una frecuencia determinada de reloj. El objetivo es variar la frecuencia de reloj y permitir ver las diferencias obtenidas en el tiempo del programa.
+
+En primera medida, se presentará el código del programa:
+```c
+void setup() {
+  Serial.begin(115200);
+  // Configurar la frecuencia
+  setCpuFrequencyMhz(80);
+  Serial.print("Frecuencia de CPU configurada: ");
+  Serial.print(getCpuFrequencyMhz());
+  Serial.println(" MHz");
+
+  unsigned long inicio = millis();
+
+  // Bucle
+  volatile unsigned long resultado = 0;
+  for (unsigned long i = 1; i <= 53000000; i++) {
+    resultado += i ^ (i % 123);
+  }
+  unsigned long fin = millis();
+  unsigned long tiempo = fin - inicio;
+  Serial.print("Resultado final: ");
+  Serial.println(resultado);
+  Serial.print("Tiempo de ejecución: ");
+  Serial.print(tiempo / 1000.0);
+  Serial.println(" segundos");
+}
+void loop() {}
+```
+Con este código, se puede obtener la siguiente respuesta para una frecuencia de 80MHz.
+
+![alt text](Cap_esp32_80MHz.png)
+
+Mientras que, para los 160MHz, se tiene que:
+
+![alt text](Cap_esp32_160MHz.png)
+
+Concluyendo así que, para un cambio de frecuencia, se nota una diferencia clara entre los tiempos de programa, donde el mismo se ve reducido a la mitad para una frecuencia que es el doble de la original.
