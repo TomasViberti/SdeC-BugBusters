@@ -128,6 +128,54 @@ Por último si se ejecuta el codigo con perfilado usando perf:
 
 ![alt text](image-26.png)
 
+# Informe de Facundo ALFICI
+
+## GPROF
+
+Como primera medida, se compiló el código habilitando la creación de perfiles.
+
+![alt text](Cap1.png)
+
+Esto generó un archivo binario, el cual se ejecutará para generar la información de perfiles.
+
+![alt text](Cap9.png)
+
+Con esto, se generó el archivo analysis utilizando la herramienta GPROF.
+
+![alt text](Cap10.png)
+
+![alt text](Cap2.png)
+
+Empezando la customización de las flags de salida de la herramienta, se plantea suprimir la impresión de funciones estáticas, utilizando la siguiente línea de código.
+**$ gprof -a test_gprof gmon.out > analysis_3.txt**
+
+![alt text](Cap4.png)
+
+Luego, se eliminarán los textos detallados con -b
+**$ gprof -b test_gprof gmon.out > analysis_3.txt**
+
+![alt text](Cap5.png)
+
+Posteriormente, se imprimirá unicamente el perfil plano utilizando -p
+**$ gprof -p -b test_gprof gmon.out > analysis_3.txt**
+
+![alt text](Cap6.png)
+
+Y, para terminar esta etapa, se imprimirá solamente la información de la función específica "func1"
+**$ gprof -pfunc1 -b test_gprof gmon.out > analysis_3.txt**
+
+![alt text](Cap7.png)
+
+Por otro lado, se quiere graficar utilizando dos herramientas diferentes.
+Primeramente, se usará gprof2dot para generar una visualización de la salida de gprof.
+
+![alt text](grafico_perf.png)
+
+Para la segunda herramienta, se utilizará Linux perf.
+
+![alt text](Cap12.png)
+
+![alt text](Cap8.png)
 
 ## Benchmarks
 # Reporte de Benchmarking y Rendimiento del Sistema
