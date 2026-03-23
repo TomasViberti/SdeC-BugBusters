@@ -271,4 +271,4 @@ Mientras que, para los 160MHz, se tiene que:
 
 ![alt text](Cap_esp32_160MHz.png)
 
-Concluyendo así que, para un cambio de frecuencia, se nota una diferencia clara entre los tiempos de programa, donde el mismo se ve reducido a la mitad para una frecuencia que es el doble de la original.
+Concluyendo así que, para un cambio de frecuencia, se nota una diferencia clara entre los tiempos de programa, donde el mismo se ve reducido a la mitad para una frecuencia que es el doble de la original. Lo cual es evidente debido a que el tiempo del programa es inversamente proporcional a la frecuencia
