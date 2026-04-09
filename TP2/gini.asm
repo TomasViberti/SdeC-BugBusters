@@ -18,3 +18,5 @@ gini_convert:
         add rax, 1
     leave
     ret
+
+section .note.GNU-stack noalloc noexec nowrite progbits
