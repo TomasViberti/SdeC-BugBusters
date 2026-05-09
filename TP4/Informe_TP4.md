@@ -134,6 +134,28 @@ modinfo /lib/modules/$(uname -r)/kernel/crypto/des_generic.ko.zst
 
 ---
 ## Desafio 1
+
+Para evitar que el kernel cargue código malicioso, se utiliza la verificación de firmas. Si un módulo no está firmado por una clave de confianza, el kernel lo rechaza.
+
+¿Cómo evitar módulos no firmados?
+
+Para forzar esta seguridad, se debe configurar el kernel con el parámetro module.sig_enforce=1. Esto hace que el kernel solo acepte módulos cuya firma sea válida, bloqueando cualquier intento de inyectar código no autorizado (común en rootkits).
+
+### Otras medidas de seguridad del Kernel:
+
+KSPP (Kernel Self Protection Project): Conjunto de parches para mitigar exploits.
+
+KASLR (Kernel Address Space Layout Randomization): Aleatoriza dónde se carga el kernel en memoria para que los atacantes no sepan dónde "golpear".
+
+Desactivar sysrq: Evita que alguien con acceso físico use combinaciones de teclas para colapsar o reiniciar el sistema.
+
+Restringir dmesg: Evitar que usuarios no privilegiados vean logs del kernel (donde a veces se filtran direcciones de memoria).
+
+### Checkinstall: Empaquetando un "Hello Word"
+
+Checkinstall es una herramienta que reemplaza el clásico sudo make install. En lugar de esparcir archivos por todo el sistema sin control, genera un paquete (.deb, .rpm o Slackware) y lo instala usando el gestor de paquetes oficial. Permite desinstalar o actualizar software compilado desde el código fuente de forma limpia y organizada.
+
+
 ---
 ## Desafio 2
 ---

@@ -1,0 +1,17 @@
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = aplicacion
+  FILE_GUID                      = 12345678-1234-1234-1234-123456789abc
+  MODULE_TYPE                    = UEFI_APPLICATION
+  ENTRY_POINT                    = UefiMain
+  TARGET_ARCH                    = X64
+
+[Sources]
+  edk2_app.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiLib
+  UefiApplicationEntryPoint
