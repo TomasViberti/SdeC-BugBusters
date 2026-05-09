@@ -155,6 +155,41 @@ Restringir dmesg: Evitar que usuarios no privilegiados vean logs del kernel (don
 
 Checkinstall es una herramienta que reemplaza el clásico sudo make install. En lugar de esparcir archivos por todo el sistema sin control, genera un paquete (.deb, .rpm o Slackware) y lo instala usando el gestor de paquetes oficial. Permite desinstalar o actualizar software compilado desde el código fuente de forma limpia y organizada.
 
+Primero se instala checkinstall:
+<img width="1011" height="30" alt="image" src="https://github.com/user-attachments/assets/a1ecc99d-56e4-4cad-8f4f-a998d04d90e3" />
+
+Luego compilamos el hello world:
+<img width="1013" height="71" alt="image" src="https://github.com/user-attachments/assets/818685d8-f2ff-455d-8260-40b9077dabe7" />
+
+Al compilar se genera el ejecutable ```hello```. Al haber compilado con un makefile que contiene lo siguiente:
+```
+# Nombre del ejecutable
+TARGET = hello
+
+# Regla por defecto: compilar
+all:
+	gcc hello.c -o $(TARGET)
+
+# Regla de instalación (la que usará checkinstall)
+install:
+	install -m 0755 $(TARGET) /usr/local/bin/
+
+# Regla para limpiar archivos temporales
+clean:
+	rm -f $(TARGET)
+```
+Y luego ejecutar el comando sudo checkinstall, el programa hello queda empaquetado en el kernel, perteneciendo al sistema operativo. Esto lo podemos chequear si ejecutamos el comando ```hello``` desde una terminal cualquiera y veremos que se ejecuta como si se tratara de otro comando:
+
+<img width="804" height="140" alt="image" src="https://github.com/user-attachments/assets/38cc3c7a-f31a-4430-bd92-046855fa2e00" />
+
+### Hardware Info (hwinfo)
+
+En primera instancia debemos instalar la herramienta ```hwinfo```:
+
+Ejecutamos el comando ```sudo apt install hwinfo```.
+
+Luego corremos el comando ```hwinfo --short```:
+
 
 ---
 ## Desafio 2
@@ -327,4 +362,14 @@ Hay tres escenarios posibles:
 - **El módulo existe pero no está cargado** → el kernel puede cargarlo automáticamente al detectar el dispositivo mediante `modprobe`. El dispositivo funciona normalmente.
 - **El módulo no existe para ese hardware** → el dispositivo no funciona. No aparece en `/dev` y el sistema no lo reconoce. Un ejemplo típico es conectar un adaptador WiFi sin driver disponible: no aparece ninguna interfaz de red.
 - **El módulo existe pero falla al cargar** → puede causar un kernel panic o simplemente rechazar la carga, dejando el dispositivo inutilizable.
+
+### 4. Correr hwinfo en una pc real con hw real y agregar la url de la información de hw en el reporte. 
+
+Luego de ejecutar el comando ```hwinfo``` con las flags para obtener el link, vemos lo siguiente:
+<img width="1182" height="45" alt="image" src="https://github.com/user-attachments/assets/bf2b4e74-b2cf-4bde-b7ff-0926ba790537" />
+
+El link propiamente dicho es: https://termbin.com/f7jg7
+
+
+### 8. Firmado de un módulo de Kernel
 
