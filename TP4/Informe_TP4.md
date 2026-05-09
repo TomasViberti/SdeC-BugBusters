@@ -373,3 +373,7 @@ El link propiamente dicho es: https://termbin.com/f7jg7
 
 ### 8. Firmado de un módulo de Kernel
 
+<img width="1855" height="352" alt="image" src="https://github.com/user-attachments/assets/7048f971-7b91-4e39-9ce7-1ce89db26210" />
+
+<img width="1119" height="93" alt="image" src="https://github.com/user-attachments/assets/a62a8e49-b9ba-405b-9cef-1f81fe7679ef" />
+
