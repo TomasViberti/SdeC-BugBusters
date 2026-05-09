@@ -1,3 +1,6 @@
 [submodule "TP3/x86-bare-metal-examples"]
 	path = TP3/x86-bare-metal-examples
 	url = https://github.com/cirosantilli/x86-bare-metal-examples
+[submodule "TP4/kenel-modules"]
+	path = TP4/kenel-modules
+	url = https://gitlab.com/sistemas-de-computacion-unc/kenel-modules.git

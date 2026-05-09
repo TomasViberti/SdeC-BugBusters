@@ -1,0 +1,77 @@
+Module                  Size  Used by
+isofs                  61440  1
+snd_seq_dummy          12288  0
+snd_hrtimer            12288  1
+vboxsf                 45056  0
+vboxguest              57344  7 vboxsf
+vboxvideo              36864  0
+drm_vram_helper        24576  1 vboxvideo
+xt_conntrack           12288  1
+xt_MASQUERADE          16384  1
+bridge                425984  0
+stp                    12288  1 bridge
+llc                    16384  2 bridge,stp
+xfrm_user              65536  1
+xfrm_algo              16384  1 xfrm_user
+xt_set                 20480  0
+ip_set                 61440  1 xt_set
+nft_chain_nat          12288  5
+nf_nat                 61440  2 nft_chain_nat,xt_MASQUERADE
+nf_conntrack          192512  3 xt_conntrack,nf_nat,xt_MASQUERADE
+nf_defrag_ipv6         24576  1 nf_conntrack
+nf_defrag_ipv4         12288  1 nf_conntrack
+xt_addrtype            12288  4
+nft_compat             20480  6
+nf_tables             385024  57 nft_compat,nft_chain_nat
+overlay               221184  0
+qrtr                   53248  2
+snd_intel8x0           53248  1
+snd_ac97_codec        196608  1 snd_intel8x0
+ac97_bus               12288  1 snd_ac97_codec
+intel_rapl_msr         20480  0
+joydev                 32768  0
+snd_pcm               200704  2 snd_intel8x0,snd_ac97_codec
+snd_seq_midi           24576  0
+snd_seq_midi_event     16384  1 snd_seq_midi
+snd_rawmidi            57344  1 snd_seq_midi
+snd_seq               122880  9 snd_seq_midi,snd_seq_midi_event,snd_seq_dummy
+intel_rapl_common      53248  1 intel_rapl_msr
+snd_seq_device         16384  3 snd_seq,snd_seq_midi,snd_rawmidi
+snd_timer              53248  3 snd_seq,snd_hrtimer,snd_pcm
+snd                   143360  11 snd_seq,snd_seq_device,snd_intel8x0,snd_timer,snd_ac97_codec,snd_pcm,snd_rawmidi
+soundcore              16384  1 snd
+ghash_clmulni_intel    12288  0
+aesni_intel            98304  0
+vmwgfx                471040  3
+input_leds             12288  0
+drm_ttm_helper         16384  4 vmwgfx,drm_vram_helper,vboxvideo
+i2c_piix4              32768  0
+mac_hid                12288  0
+ttm                   126976  3 vmwgfx,drm_vram_helper,drm_ttm_helper
+i2c_smbus              20480  1 i2c_piix4
+serio_raw              20480  0
+binfmt_misc            24576  1
+sch_fq_codel           24576  2
+msr                    12288  0
+parport_pc             53248  0
+ppdev                  24576  0
+lp                     32768  0
+parport                73728  3 parport_pc,lp,ppdev
+efi_pstore             12288  0
+nfnetlink              20480  5 nft_compat,nf_tables,ip_set
+dmi_sysfs              20480  0
+ip_tables              32768  0
+x_tables               65536  6 xt_conntrack,nft_compat,xt_addrtype,xt_set,ip_tables,xt_MASQUERADE
+autofs4                57344  2
+hid_generic            12288  0
+vga16fb                32768  0
+usbhid                 77824  0
+pata_acpi              12288  0
+hid                   262144  2 usbhid,hid_generic
+vgastate               20480  1 vga16fb
+psmouse               217088  0
+video                  77824  0
+wmi                    28672  1 video
+ahci                   49152  1
+e1000                 180224  0
+libahci                53248  1 ahci
