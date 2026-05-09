@@ -153,7 +153,12 @@ Restringir dmesg: Evitar que usuarios no privilegiados vean logs del kernel (don
 
 ### Checkinstall: Empaquetando un "Hello Word"
 
-Checkinstall es una herramienta que reemplaza el clásico sudo make install. En lugar de esparcir archivos por todo el sistema sin control, genera un paquete (.deb, .rpm o Slackware) y lo instala usando el gestor de paquetes oficial. Permite desinstalar o actualizar software compilado desde el código fuente de forma limpia y organizada.
+¿Qué es Checkinstall?
+
+Es una herramienta que reemplaza el clásico sudo make install. En lugar de esparcir archivos por todo el sistema sin control, genera un paquete (.deb, .rpm o Slackware) y lo instala usando el gestor de paquetes oficial. 
+
+¿Para que sirve?
+Permite desinstalar o actualizar software compilado desde el código fuente de forma limpia y organizada.
 
 
 ---
