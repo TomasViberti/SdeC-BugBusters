@@ -137,7 +137,7 @@ modinfo /lib/modules/$(uname -r)/kernel/crypto/des_generic.ko.zst
 
 Para evitar que el kernel cargue código malicioso, se utiliza la verificación de firmas. Si un módulo no está firmado por una clave de confianza, el kernel lo rechaza.
 
-¿Cómo evitar módulos no firmados?
+> ¿Cómo evitar módulos no firmados?
 
 Para forzar esta seguridad, se debe configurar el kernel con el parámetro module.sig_enforce=1. Esto hace que el kernel solo acepte módulos cuya firma sea válida, bloqueando cualquier intento de inyectar código no autorizado (común en rootkits).
 
@@ -153,12 +153,16 @@ Restringir dmesg: Evitar que usuarios no privilegiados vean logs del kernel (don
 
 ### Checkinstall: Empaquetando un "Hello Word"
 
-¿Qué es Checkinstall?
+> ¿Qué es Checkinstall?
 
 Es una herramienta que reemplaza el clásico sudo make install. En lugar de esparcir archivos por todo el sistema sin control, genera un paquete (.deb, .rpm o Slackware) y lo instala usando el gestor de paquetes oficial. 
 
-¿Para que sirve?
+> ¿Para que sirve?
+
 Permite desinstalar o actualizar software compilado desde el código fuente de forma limpia y organizada.
+
+
+> Probando el empaquetado de un ```hello world```.
 
 Primero se instala checkinstall:
 <img width="1011" height="30" alt="image" src="https://github.com/user-attachments/assets/a1ecc99d-56e4-4cad-8f4f-a998d04d90e3" />
@@ -166,8 +170,17 @@ Primero se instala checkinstall:
 Luego compilamos el hello world:
 <img width="1013" height="71" alt="image" src="https://github.com/user-attachments/assets/818685d8-f2ff-455d-8260-40b9077dabe7" />
 
-Al compilar se genera el ejecutable ```hello```. Al haber compilado con un makefile que contiene lo siguiente:
+Al compilar se genera el ejecutable 
+
+
+```bash
+hello
 ```
+
+ Al haber compilado con un makefile que contiene lo siguiente:
+
+ 
+```bash
 # Nombre del ejecutable
 TARGET = hello
 
@@ -183,18 +196,17 @@ install:
 clean:
 	rm -f $(TARGET)
 ```
-Y luego ejecutar el comando sudo checkinstall, el programa hello queda empaquetado en el kernel, perteneciendo al sistema operativo. Esto lo podemos chequear si ejecutamos el comando ```hello``` desde una terminal cualquiera y veremos que se ejecuta como si se tratara de otro comando:
+
+
+Y luego ejecutar el comando sudo checkinstall, el programa hello queda empaquetado en el kernel, perteneciendo al sistema operativo. Esto lo podemos chequear si ejecutamos el comando 
+
+
+```bash
+hello
+```
+desde una terminal cualquiera y veremos que se ejecuta como si se tratara de otro comando:
 
 <img width="804" height="140" alt="image" src="https://github.com/user-attachments/assets/38cc3c7a-f31a-4430-bd92-046855fa2e00" />
-
-### Hardware Info (hwinfo)
-
-En primera instancia debemos instalar la herramienta ```hwinfo```:
-
-Ejecutamos el comando ```sudo apt install hwinfo```.
-
-Luego corremos el comando ```hwinfo --short```:
-
 
 ---
 ## Desafio 2
