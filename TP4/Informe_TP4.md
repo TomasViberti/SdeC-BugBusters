@@ -210,6 +210,72 @@ desde una terminal cualquiera y veremos que se ejecuta como si se tratara de otr
 
 ---
 ## Desafio 2
+
+Para este desafío se responderán ciertas preguntas y sentencias propuestas.
+
+### ¿Qué funciones tiene disponible un programa y un módulo?
+Lo más importante a destacar es que un programa de usuario tendrá disponibles las funciones de sus bibliotecas, como por ejemplo libc. Pero en el momento en el que necesite interactuar con el sistema operativo deberá utilizar **system calls** hacia el kernel.
+En cambio, un módulo del kernel no necesita usar librerias para poder acceder al mismo. Éste va a correr dentro del mismo kernel y tendrá acceso a funciones internas del mismo.
+La diferencia entre ambas formas de contacto con el kernel se pueden ver en la siguiente tabla.
+
+| Programa | Módulo de kernel |
+|---|---|
+| `printf()` | `printk()` |
+| `malloc()` | `kmalloc()` |
+| `free()` | `kfree()` |
+| `fopen()` | APIs VFS del kernel |
+| `read()` | `copy_from_user()` |
+| `write()` | `copy_to_user()` |
+| `sleep()` | `msleep()` |
+
+### User Space / Kernel Space
+Linux se encarga de separar la ejecución del sistema en dos espacios principales pero distintos; El User Space y el Kernel Space.
+
+#### User Space
+Se encarga de ejecutar programas normales, como ser:
+- Terminal
+- Navegadores
+- Editores
+- Python.
+  
+Estos programas van a tener acceso limitado al HW y a los recursos críticos del sistema. No pueden manejar la memoria física, drivers o dispositivos directamente, si no que lo hacen indirectamente mediante lo **system calls**.
+
+#### Kernel Space
+Es el espacio donde se ejecuta el núcleo de Linux y los módulos del kernel. Ahí el código tiene privilegios completos sobre la máquina:
+- Acceso al HW
+- Manejo de memoria
+- Drivers
+- Sistemas de Archivos.
+
+### Espacio de datos
+Es la región de memoria donde un programa guarda sus datos durante la ejecución. El espacio de datos corresponde principalmente a las variables globales y estáticas del programa. Generalmente se divide en:
+- .data > Variables inicializadas
+- .bss > Variables no inicializadas.
+
+También existe un espacio dentro del kernel llamado espacio de datos del kernel, donde el núcleo y los módulos almacenan variables globales y estáticas. La diferencia entre ambos es que el espacio de datos de un programa está aislado y protegido, mientras que el espacio de datos del kernel pertenece al Kernel Space y tiene privilegios completos sobre el sistema.
+
+### Drivers y `/dev`
+Un driver es un componente del kernel que permite que el sistema operativo se comunique con un dispositivo de hardware o con un dispositivo virtual. Muchos drivers se implementan con módulos del kernel que pueden cargarse y descargarse dinámicamente sin reiniciar el sistema. Entonces, se dice que el driver va a actuar como intermediario entre el hardware y los programas de usuario. Algunos ejemplos de dispositivos con drivers pueden ser:
+- Teclado
+- Mouse
+- Disco
+- USB
+- Audio
+- GPU
+
+#### Directorio `/dev`
+Este es un directorio especial de Linux, que contiene device files. Dentro aparecerán representados los dispositivos del sistema como si fuesen archivos, para de esta forma acceder a ellos y poder trabajarlos de forma más sencilla. Uno de los tipos de dispositivos presentes en este directorio son los **Block Devices**, o sea:
+- Discos
+- SSD's
+- Pendrives.
+
+Mientras que por otro lado, tenemos los **Character Devices**, como ser:
+- Teclado
+- Serial
+- Terminal.
+
+Ahora, cuando los drivers reciben operaciones directamente van a controlar el hardware y responder al programa. Caso contrario con los programas, los cuales van a dirigirse a la carpeta `/dev` para realizar acciones del tipo R or W.
+
 ---
 
 ## Preguntas del informe
@@ -399,7 +465,31 @@ El link propiamente dicho es:
 ```url
 https://termbin.com/f7jg7
 ```
+### 5. ¿Qué diferencia existe entre un módulo y un programa?
 
+La diferencia principal entre un programa y un módulo es el lugar donde se ejecutarán cada uno y el nivel de privilegio que tienen. Como ya se mencionó antes, un programa se ejecutará en el **User Space**, donde tendrá permisos limitados y dependerá de librerias para comunicarse con el sistema operativo.
+Por otra parte, un módulo del kernel se ejecutará en el **Kernel Space**, por lo que tendrá permisos completos y formará parte del kernel mientra este se encuentre cargado. También podrá acceder al HW y a estructuras internas del sistema de manera independiente.
+
+La diferencia más importante es que, en caso de un fallo de programa, éste solamente se terminará a la fuerza. Pero si falla un módulo del kernel, puede llegar a provocarse un congelamiento del sistema completo, debido a que comparte memoria y privilegios con el kernel.
+
+### 6. ¿Cómo puede ver una lista de las llamadas al sistema que realiza un simple helloworld en c?
+
+Según la bibliografía propuesta en las consignas, una buena forma de ver la lista de llamdas al sistema que se produce al ejecutar un hello world en C es utilizando una herramienta llamada *Strace*, que se encargará de interceptar y mostrar todas las llamadas al sistema que el programa le realizará al kernel. Se utilizará el ejemplo de hello.c para mostrar la salida impresa gracias a la herramienta.
+
+<img width="924" height="643" alt="imagen" src="https://github.com/user-attachments/assets/a0e99797-43d7-4d85-b533-c42386333cc0" />
+
+La instrucción más importante en ese caso es `write(1, "Hola Mundo!\n", 12Hola Mundo!) = 12`, que va a mostrar el momento en el que el programa le pide al kernel que el sistema escriba en pantalla el mensaje.
+
+### 7. ¿Qué es un segmentation fault? ¿Cómo lo maneja el kernel y como lo hace un programa?
+
+El Segmentation Fault es un error que ocurre cuando un programa intenta acceder a una región de memoria que no tiene permitida. Entonces, cuando el CPU detecta un acceso inválido, se generará una excepción de HW y el control pasará al kernel, para luego éste comprobar si el acceso es válido o no. En caso de que el acceso sea inválido se envía un SIGSEGV al proceso, lo que se traduce a `Segmentation fault(core dumped)`.
+
+La forma en la que maneja el kernel este tipo de errores se puede representar con un flujo de acciones.
+- Kernel detecta acceso inválido ---> Protege al sistema ---> Termina el proceso enviándole la señal SIGSEGV.
+
+Por otro lado, un programa normalmente no maneja directamente este tipo de errores, por lo que lo único destacable será que recibirá la señal SIGSEGV y la selección de acciones a partir de ahí dependerá del programa mismo. Por ejemplo, puede cerrarse a sí mismo, o capturar la señal y hacer algo con la misma.
+
+En caso de que el error se produzca en el **Kernel Space** se puede generar una situación mucho mas grave, dada la igualdad de privilegios y memoria compartida entre cualquier módulo del kernel y el kernel, entonces puede ocurrir un *Kernel panic*, un reinicio de la computadora, un congelamiento del sistema o incluso se pueden corromper espacios de memoria. Esto se debe a que, por obvias razones, el kernel no puede terminarse a sí mismo.
 
 ### 8. Firmado de un módulo de Kernel
 
@@ -425,6 +515,36 @@ modinfo mi_modulo.ko | tail -n 20
 En el caso del archivo firmado en este trabajo, obtenemos la siguiente firma:
 
 <img width="1150" height="463" alt="image" src="https://github.com/user-attachments/assets/50066656-e84f-4980-b1b1-89373d4db7f9" />
+
+### 9. Agregar evidencia de la compilación, carga y descarga de su propio módulo imprimiendo el nombre del equipo en los registros del kernel. 
+
+En primera medida, se compiló el módulo utilizando el comando `make`.
+
+<img width="1420" height="602" alt="Captura desde 2026-05-10 18-59-43" src="https://github.com/user-attachments/assets/2c9b1db8-0aa9-438e-ae86-28bb434ebc94" />
+
+Luego, se pasó a cargar el módulo, como se puede ver en las siguientes líneas de código.
+
+```bash
+	sudo insmod mimodulo.ko
+	sudo dmesg
+	lsmod | grep mod
+```
+
+<img width="1386" height="162" alt="Captura desde 2026-05-10 19-00-50" src="https://github.com/user-attachments/assets/6e4e7e89-8ca7-4956-a455-fbac7e7288fe" />
+
+Finalmente, se realizó la descarga el módulo y se verificó si se realizó correctamente.
+```bash
+	sudo rmmod mimodulo
+	sudo dmsg
+	lsmod | grep mod
+	cat /proc/modules  | grep mod
+```
+
+<img width="1858" height="422" alt="Captura desde 2026-05-10 19-01-46" src="https://github.com/user-attachments/assets/f66f231b-c7a0-45ea-a0ab-f96edb82db38" />
+
+Ahora, algo importante a destacar es que, para mi caso, el kernel no corrió el mensaje del módulo debido a que éste no estaba firmado, mostrando el siguiente mensaje: `module verification failed: signature and/or required key missing - tainting kernel`
+
+Este mensaje representa que el kernel representará al sistema como contaminado, es decir, no corre el código por seguridad. (Esto no debería pasar si se realiza esta consigna utilizando la firma del punto anterior.)
 
 ### 10. ¿Que pasa si mi compañero con secure boot habilitado intenta cargar un módulo firmado por mi? 
 
