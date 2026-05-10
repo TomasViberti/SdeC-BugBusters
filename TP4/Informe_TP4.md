@@ -160,6 +160,41 @@ Es una herramienta que reemplaza el clásico sudo make install. En lugar de espa
 ¿Para que sirve?
 Permite desinstalar o actualizar software compilado desde el código fuente de forma limpia y organizada.
 
+Primero se instala checkinstall:
+<img width="1011" height="30" alt="image" src="https://github.com/user-attachments/assets/a1ecc99d-56e4-4cad-8f4f-a998d04d90e3" />
+
+Luego compilamos el hello world:
+<img width="1013" height="71" alt="image" src="https://github.com/user-attachments/assets/818685d8-f2ff-455d-8260-40b9077dabe7" />
+
+Al compilar se genera el ejecutable ```hello```. Al haber compilado con un makefile que contiene lo siguiente:
+```
+# Nombre del ejecutable
+TARGET = hello
+
+# Regla por defecto: compilar
+all:
+	gcc hello.c -o $(TARGET)
+
+# Regla de instalación (la que usará checkinstall)
+install:
+	install -m 0755 $(TARGET) /usr/local/bin/
+
+# Regla para limpiar archivos temporales
+clean:
+	rm -f $(TARGET)
+```
+Y luego ejecutar el comando sudo checkinstall, el programa hello queda empaquetado en el kernel, perteneciendo al sistema operativo. Esto lo podemos chequear si ejecutamos el comando ```hello``` desde una terminal cualquiera y veremos que se ejecuta como si se tratara de otro comando:
+
+<img width="804" height="140" alt="image" src="https://github.com/user-attachments/assets/38cc3c7a-f31a-4430-bd92-046855fa2e00" />
+
+### Hardware Info (hwinfo)
+
+En primera instancia debemos instalar la herramienta ```hwinfo```:
+
+Ejecutamos el comando ```sudo apt install hwinfo```.
+
+Luego corremos el comando ```hwinfo --short```:
+
 
 ---
 ## Desafio 2
@@ -333,3 +368,72 @@ Hay tres escenarios posibles:
 - **El módulo no existe para ese hardware** → el dispositivo no funciona. No aparece en `/dev` y el sistema no lo reconoce. Un ejemplo típico es conectar un adaptador WiFi sin driver disponible: no aparece ninguna interfaz de red.
 - **El módulo existe pero falla al cargar** → puede causar un kernel panic o simplemente rechazar la carga, dejando el dispositivo inutilizable.
 
+### 4. Correr hwinfo en una pc real con hw real y agregar la url de la información de hw en el reporte. 
+
+Luego de ejecutar el comando con las flags para obtener el link:
+
+
+```bash
+hwinfo
+```
+
+Vemos lo siguiente:
+
+<img width="1182" height="45" alt="image" src="https://github.com/user-attachments/assets/bf2b4e74-b2cf-4bde-b7ff-0926ba790537" />
+
+
+El link propiamente dicho es: 
+
+```url
+https://termbin.com/f7jg7
+```
+
+
+### 8. Firmado de un módulo de Kernel
+
+Primero creamos una identidad digital:
+<img width="1855" height="352" alt="image" src="https://github.com/user-attachments/assets/7048f971-7b91-4e39-9ce7-1ce89db26210" />
+
+Luego importamos la llave que creamos a nuestra computadora.
+<img width="1119" height="93" alt="image" src="https://github.com/user-attachments/assets/a62a8e49-b9ba-405b-9cef-1f81fe7679ef" />
+
+Una vez hecho eso reiniciamos la pc, instroducimos la clave que nos solicitaron al hacer la llave MOK y se reinicia el equipo.
+
+Por otro lado, debemos crear un archivo para poder firmar, el cual llamamos ```mi_modulo.ko```. En el mismo copiamos el contenido de algun archivo .ko ya existente en el kernel, para asi poder firmarlo. Además debemos hacer que el usuario tratando de firmar el archivo sea el dueño del mismo. Luego lo firmamos:
+
+<img width="1752" height="98" alt="image" src="https://github.com/user-attachments/assets/617d7abe-b6ae-4aac-a3a8-1b76459108f3" />
+
+Una vez hecho eso podemos verificar la firma mediante el comando: 
+
+
+```bash
+modinfo mi_modulo.ko | tail -n 20
+```
+
+En el caso del archivo firmado en este trabajo, obtenemos la siguiente firma:
+
+<img width="1150" height="463" alt="image" src="https://github.com/user-attachments/assets/50066656-e84f-4980-b1b1-89373d4db7f9" />
+
+### 10. ¿Que pasa si mi compañero con secure boot habilitado intenta cargar un módulo firmado por mi? 
+
+En principio lo que ocurre es que el sistema rechazará el módulo y no se cargará, tirandonos el error 
+
+```bash
+Required key not available
+```
+
+ Esto es porque aunque el módulo esté firmado, el kernel de mi compañero no tendría mi llave pública en su lista de llaves confiables. Para Secure Boot, una firma de un autor desconocido (en este caso yo) es igual de inválida que no tener ninguna firma.
+
+### 11. Análisis de la nota de Ars Technica acerca de Secure Boot
+
+> ¿Cuál fue la consecuencia principal del parche de Microsoft sobre GRUB en sistemas con arranque dual (Linux y Windows)?
+
+Microsoft lanzó una actualización de la política de revocación (DBX) para bloquear versiones vulnerables de GRUB. La consecuencia fue que muchos sistemas Linux en dual-boot dejaron de arrancar, mostrando errores de "Security Policy Violation" porque el firmware del ordenador ahora consideraba que el cargador de arranque de Linux no era seguro.
+
+> ¿Qué implicancia tiene desactivar Secure Boot como solución al problema descrito en el artículo?
+
+Desactivar Secure Boot "soluciona" el problema de arranque, pero elimina la cadena de confianza. CUando hacemos eso, el sistema queda vulnerable a bootkits: malware que se ejecuta antes que el sistema operativo y que es casi imposible de detectar por un antivirus convencional.
+
+> ¿Cuál es el propósito principal del Secure Boot en el proceso de arranque de un sistema?
+
+El propósito principal del Secure Boot es asegurar que el software cargado durante el inicio (firmware, bootloader, kernel) esté firmado por una entidad de confianza. Su objetivo es garantizar que nadie haya modificado el código de arranque para interceptar datos o tomar control total del hardware antes de que carguen las defensas del SO.
