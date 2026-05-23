@@ -23,3 +23,6 @@ unload:
 
 log:
 	sudo dmesg | tail -10
+
+logclear:
+	sudo dmesg -C

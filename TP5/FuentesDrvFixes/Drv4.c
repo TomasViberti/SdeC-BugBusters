@@ -94,7 +94,7 @@ static int __init drv4_init(void) /* Constructor */
         return ret;
     }
 
-    if (IS_ERR(cl = class_create(THIS_MODULE, "SdeC_drive")))
+    if (IS_ERR(cl = class_create("SdeC_drive")))
     {
         unregister_chrdev_region(first, 1);
         return PTR_ERR(cl);
