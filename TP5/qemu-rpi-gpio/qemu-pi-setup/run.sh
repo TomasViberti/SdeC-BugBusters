@@ -23,9 +23,9 @@ IMGNAME="raspios_lite_armhf_latest.img"
 # Port to forward ssh to
 SSHPORT=50022
 # Enable or disable GPIO management
-ENABLEQTEST=false
+ENABLEQTEST=true
 #ENABLEQTEST=false
-QTESTSOCKET="/tmp/tmp-gpio.sock"
+QTESTSOCKET="/tmp/qtest.sock"
 
 echo "[ ] root image: $IMGNAME"
 
@@ -75,6 +75,7 @@ SERIAL="$SERIAL -monitor unix:/tmp/monitor.sock,server,nowait"
     -kernel  "$ROOTFS/kernel8.img"                    \
     -append  "$BOOTPARAMS"                            \
     -drive   "file=$IMGNAME,if=sd,format=raw,index=0" \
+    -device  usb-kbd                                  \
     $NETPARAMS                                        \
     $QTESTPARAMS                                      \
     $LOGPARAMS                                        \
