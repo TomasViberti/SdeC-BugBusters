@@ -243,6 +243,14 @@ El driver desarrollado actúa como puente entre la aplicación de usuario y el k
         v
 [ Kernel + controlador GPIO + hardware GPIO ]
 ```
+Para iniciar el sistema:
+<img width="947" height="265" alt="image" src="https://github.com/user-attachments/assets/662b8462-f557-4801-b2e0-3a916901d11c" />
+
+<img width="1493" height="460" alt="image" src="https://github.com/user-attachments/assets/78a5ef29-ad61-499b-b211-ecd9e4022c94" />
+
+<img width="954" height="290" alt="image" src="https://github.com/user-attachments/assets/df9f48ec-fd9a-4511-b829-beb2a0c845c7" />
+
+<img width="950" height="554" alt="image" src="https://github.com/user-attachments/assets/c56c8154-5bff-4953-b17f-8bf7bab5b804" />
 
 ### Cómo se obtiene el dato del GPIO
 
@@ -301,7 +309,31 @@ La aplicación de usuario está escrita en Python y usa `tkinter` para la interf
 6. El valor se agrega a las listas de tiempo y muestras.
 7. `matplotlib` actualiza el gráfico embebido.
 
-En este recorrido se ve también el cambio de señal en la interfaz cuando se alterna entre GPIO4 y GPIO17. [Espacio reservado para la captura: app corriendo y cambiando de GPIO]
+Como prueba, se muestra la inicializacion de la app desde la propia RaspberryPi simulada en Qemu:
+
+<img width="950" height="95" alt="image" src="https://github.com/user-attachments/assets/9b186d9b-af64-4780-975a-7e0bd38dcc65" />
+
+En este recorrido se ve también el cambio de señal en la interfaz cuando se alterna entre GPIO4 y GPIO17. En primera instancia se selecciona el GPIO4:
+
+<img width="999" height="737" alt="image" src="https://github.com/user-attachments/assets/8c2847b6-8e66-4806-9cc7-e16a10761e3c" />
+
+
+Luego cambiamos a GPIO17:
+
+<img width="997" height="735" alt="image" src="https://github.com/user-attachments/assets/91495116-20c7-4c74-a8ec-9e746ee50c71" />
+
+En la consola de la RaspberryPi:
+
+<img width="950" height="134" alt="image" src="https://github.com/user-attachments/assets/bce56b9c-80c8-46f8-b6eb-c94b2cce0be4" />
+
+Al setear un 1 en el GPIO17 desde el emulador:
+
+<img width="959" height="330" alt="image" src="https://github.com/user-attachments/assets/b8491914-2402-410d-a672-9f4530840ee5" />
+
+Vemos como se actualiza el gráfico:
+
+<img width="1004" height="744" alt="image" src="https://github.com/user-attachments/assets/b6c22aad-5298-4434-b1a5-dd64bc7c0c7b" />
+
 
 ### Detalles de implementación
 
