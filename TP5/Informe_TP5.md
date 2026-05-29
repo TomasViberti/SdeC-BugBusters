@@ -50,9 +50,9 @@
 
 ## Introducción
 
-Este trabajo práctico aborda la programación de módulos del kernel de Linux, con foco en la construcción de un **Character Device Driver (CDD)**. El objetivo final es desarrollar un driver que permita sensar dos señales externas con un período de un segundo, y una aplicación de usuario que lea una de las señales y la grafique en tiempo real.
+Este trabajo práctico aborda la programación de módulos del kernel de Linux, con foco en la construcción de un **Character Device Driver (CDD)**. El objetivo final es desarrollar un driver que permita sensar dos señales GPIO externas con un período de un segundo, y una aplicación de usuario que lea una de las señales y la grafique en tiempo real.
 
-El desarrollo se realizó sobre una PC con Ubuntu 24.04 y kernel 6.17, simulando las señales por software en lugar de hardware real (Raspberry Pi).
+El desarrollo se realizó sobre una Raspberry Pi virtualizada con QEMU, cargando un módulo del kernel que expone el dispositivo `/dev/sensor_driver` y una app Python que interactúa con ese nodo desde espacio de usuario.
 
 ---
 
@@ -221,13 +221,123 @@ El kernel y el espacio de usuario tienen espacios de memoria separados y protegi
 
 ## CDD
 
+El driver desarrollado actúa como puente entre la aplicación de usuario y el kernel. Su responsabilidad es exponer un nodo de caracteres en `/dev`, seleccionar cuál de las dos señales GPIO se va a leer y devolver el valor leído en un formato simple de texto.
+
+### Flujo general del sistema
+
+```
+[ App Python ]
+        |
+        | write("0") o write("1")
+        v
+[ /dev/sensor_driver ]
+        |
+        | file_operations -> write/read
+        v
+[ sensor_driver.c ]
+        |
+        | API de GPIO del kernel
+        v
+[ gpiochip / gpio_desc / gpiod_get_value_cansleep() ]
+        |
+        v
+[ Kernel + controlador GPIO + hardware GPIO ]
+```
+
+### Cómo se obtiene el dato del GPIO
+
+Al cargar el módulo, el driver busca el `gpio_device` disponible y obtiene el `gpio_chip` asociado. Después reserva dos descriptores de GPIO con la API de descriptores del kernel:
+
+- `GPIO4` como señal 0.
+- `GPIO17` como señal 1.
+
+La lectura no se hace mediante sysfs, sino con `gpiod_get_value_cansleep()`. Esa función consulta el estado lógico del descriptor GPIO de forma segura, respetando las reglas del kernel y permitiendo su uso en contextos donde la lectura puede dormir.
+
+Cuando la aplicación hace una lectura sobre `/dev/sensor_driver`, el driver devuelve una línea de texto con este formato:
+
+```text
+GPIO4:0
+GPIO17:1
+```
+
+### Interacción con el kernel
+
+El módulo registra un `character device` con `alloc_chrdev_region()`, `class_create()`, `device_create()` y `cdev_add()`. Esa cadena hace que el kernel cree el nodo en `/dev` y conecte las operaciones de archivo del módulo con la aplicación de usuario.
+
+Las operaciones implementadas son:
+
+- `open()` y `release()` para registrar el acceso al dispositivo.
+- `write()` para seleccionar qué GPIO se va a monitorear.
+- `read()` para consultar el valor actual del GPIO elegido.
+
+El `write()` interpreta un byte:
+
+- `0` selecciona `GPIO4`.
+- `1` selecciona `GPIO17`.
+
+Luego `read()` arma la respuesta textual y la copia al espacio de usuario con `copy_to_user()`. De este modo, la aplicación no accede al hardware directamente, sino a través del contrato que define el driver.
+
+### Criterio de diseño
+
+El uso de la API moderna de GPIO del kernel evita depender de mecanismos antiguos como sysfs. Además, permite que el driver tenga una interfaz limpia y centrada en descriptores, con mejor integración con la infraestructura interna del kernel.
+
+### Prueba realizada
+
+La validación del CDD consistió en cargar el módulo, verificar la creación de `/dev/sensor_driver`, escribir la selección de GPIO desde la aplicación y confirmar que la lectura devolviera el valor esperado en el gráfico.
+
 ---
 
 ## Aplicación de usuario
 
+La aplicación de usuario está escrita en Python y usa `tkinter` para la interfaz y `matplotlib` para la visualización en tiempo real. Su función es escribir la selección del GPIO sobre `/dev/sensor_driver`, leer una vez por segundo el valor publicado por el driver y mostrarlo en un gráfico temporal.
+
+### Flujo de la app
+
+1. El usuario presiona `Ver GPIO4` o `Ver GPIO17`.
+2. La app escribe `0` o `1` en `/dev/sensor_driver`.
+3. El driver cambia el GPIO monitoreado internamente.
+4. Un hilo de lectura consulta el dispositivo cada segundo.
+5. La respuesta textual del driver se parsea con una expresión regular.
+6. El valor se agrega a las listas de tiempo y muestras.
+7. `matplotlib` actualiza el gráfico embebido.
+
+### Detalles de implementación
+
+La app usa un hilo secundario para evitar bloquear la interfaz gráfica. Ese hilo:
+
+- espera a que haya un GPIO seleccionado,
+- abre el dispositivo en modo lectura,
+- obtiene una línea de texto,
+- la interpreta con un patrón del tipo `GPIO<numero>:<valor>`,
+- y almacena la muestra en memoria para graficarla.
+
+La interfaz principal mantiene el control de la ventana, los botones y el ciclo de refresco del gráfico. Cuando el usuario cambia de GPIO, la app limpia las muestras anteriores y reinicia el eje temporal para que la gráfica represente solo la señal activa.
+
+### Relación con el driver
+
+La app no conoce detalles internos del kernel ni del hardware GPIO. Su única dependencia es el contrato del archivo de dispositivo:
+
+- escribir `0` o `1` para seleccionar la entrada,
+- leer una cadena con el valor actual del GPIO,
+- y repetir el proceso cada segundo.
+
+Eso hace que la app sea independiente del mecanismo interno usado por el driver para llegar al hardware.
+
 ---
 
 ## Conclusiones
+
+El trabajo permitió integrar espacio de usuario y espacio de kernel a través de un `character device` real, con una separación clara de responsabilidades. El driver resuelve el acceso al hardware GPIO desde el kernel, mientras que la aplicación se ocupa únicamente de la visualización y de la interacción con el usuario.
+
+Una de las conclusiones principales es que el flujo correcto no consiste en leer GPIOs directamente desde Python, sino en delegar esa tarea al módulo del kernel y tratar al dispositivo como un archivo. Ese modelo simplifica la aplicación, mejora el aislamiento y aprovecha la infraestructura estándar de Linux para manejo de dispositivos.
+
+También se comprobó que la API moderna de GPIO basada en descriptores es más adecuada que enfoques antiguos basados en sysfs. El driver resultante queda más cercano a las prácticas actuales del kernel y más fácil de mantener.
+
+Por último, la solución final demuestra la separación entre:
+
+- el hardware o su emulación,
+- el driver que abstrae el acceso,
+- y la aplicación de usuario que consume los datos y los presenta de forma gráfica.
 
 ---
 
