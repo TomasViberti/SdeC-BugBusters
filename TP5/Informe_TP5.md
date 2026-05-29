@@ -301,6 +301,8 @@ La aplicación de usuario está escrita en Python y usa `tkinter` para la interf
 6. El valor se agrega a las listas de tiempo y muestras.
 7. `matplotlib` actualiza el gráfico embebido.
 
+En este recorrido se ve también el cambio de señal en la interfaz cuando se alterna entre GPIO4 y GPIO17. [Espacio reservado para la captura: app corriendo y cambiando de GPIO]
+
 ### Detalles de implementación
 
 La app usa un hilo secundario para evitar bloquear la interfaz gráfica. Ese hilo:
@@ -311,7 +313,12 @@ La app usa un hilo secundario para evitar bloquear la interfaz gráfica. Ese hil
 - la interpreta con un patrón del tipo `GPIO<numero>:<valor>`,
 - y almacena la muestra en memoria para graficarla.
 
-La interfaz principal mantiene el control de la ventana, los botones y el ciclo de refresco del gráfico. Cuando el usuario cambia de GPIO, la app limpia las muestras anteriores y reinicia el eje temporal para que la gráfica represente solo la señal activa.
+- Cumpliendo con los requerimientos específicos del enunciado, la visualización invierte los ejes convencionales: el valor lógico de la señal se representa en el eje de las abscisas (X) y el tiempo transcurrido en el eje de las ordenadas (Y).
+- La aplicación recibe los valores crudos en texto desde el driver y se encarga de realizar la corrección de escala y el casteo a valores numéricos, liberando al kernel de responsabilidades de formato visual.
+
+La interfaz principal mantiene el control de la ventana, los botones y el ciclo de refresco del gráfico. Cuando el usuario cambia de GPIO, la app limpia las muestras anteriores, reinicia el eje temporal y actualiza el título del gráfico para indicar claramente la nueva señal que se está sensando, representando solo la lectura activa. Ese mismo flujo puede verse en la consola SSH de la Raspberry Pi virtual mientras la app queda ejecutándose. [Espacio reservado para la captura: consola SSH con la app ejecutándose]
+
+La selección del GPIO también queda visible en la consola cuando la app escribe `0` o `1` sobre `/dev/sensor_driver` para cambiar de entrada. [Espacio reservado para la captura: consola SSH seteando GPIO]
 
 ### Relación con el driver
 
