@@ -22,6 +22,9 @@ IMGNAME="raspios_lite_armhf_latest.img"
 
 # Port to forward ssh to
 SSHPORT=50022
+# Guest resources
+MEMORY_MB=1024
+SMP_CPUS=4
 # Enable or disable GPIO management
 ENABLEQTEST=true
 #ENABLEQTEST=false
@@ -71,6 +74,8 @@ SERIAL="$SERIAL -monitor unix:/tmp/monitor.sock,server,nowait"
 "$QEMU"                                                   \
     $SERIAL                                           \
     -M       raspi3b                                  \
+	-m       "$MEMORY_MB"                            \
+	-smp     "$SMP_CPUS"                              \
 	-dtb "$ROOTFS/bcm2710-rpi-3-b.dtb"  			  \
     -kernel  "$ROOTFS/kernel8.img"                    \
     -append  "$BOOTPARAMS"                            \

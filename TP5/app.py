@@ -78,6 +78,12 @@ def read_once_from_driver() -> str:
         return devf.read()
 
 
+def write_selection(selection: str) -> None:
+    with open(DEVICE_PATH, "w", encoding="ascii") as devf:
+        devf.write(selection)
+        devf.flush()
+
+
 def reader_thread(state: SharedState) -> None:
     next_tick = time.monotonic()
     driver_path = normalize_driver_path()
@@ -243,15 +249,14 @@ class AppGUI:
     def update_plot(self) -> None:
         with self.state.lock:
             visible = self.state.graph_visible
-            x = list(self.state.values_x)
-            y = list(self.state.times_y)
+            x = list(self.state.times_y)
+            y = list(self.state.values_x)
             title = self.state.title
             monitored_gpio = self.state.monitored_gpio
 
         self.ax.clear()
-        self.ax.set_xlabel("Valor de senal (X)")
-        self.ax.set_ylabel("Tiempo [s] (Y)")
-        self.ax.set_xlim(-0.5, 1.5)
+        self.ax.set_xlabel("Tiempo [s]")
+        self.ax.set_ylabel("Valor leido")
         self.ax.grid(True, alpha=0.3)
 
         if not visible or monitored_gpio is None:
@@ -268,8 +273,9 @@ class AppGUI:
             self.ax.set_ylim(0.0, 1.0)
         else:
             self.ax.set_title(title)
-            y_max = max(10.0, y[-1] + 1.0) if y else 10.0
-            self.ax.set_ylim(0.0, y_max)
+            x_max = max(10.0, x[-1] + 1.0) if x else 10.0
+            self.ax.set_xlim(0.0, x_max)
+            self.ax.set_ylim(-0.1, 1.1)
             if x and y:
                 self.ax.plot(x, y, marker="o", linestyle="-", linewidth=1.5, markersize=4, color="tab:blue")
 
