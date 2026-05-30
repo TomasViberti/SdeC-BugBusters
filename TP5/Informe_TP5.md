@@ -219,6 +219,43 @@ El kernel y el espacio de usuario tienen espacios de memoria separados y protegi
 
 ---
 
+## Generación de Señales
+
+En este apartado, se realizóun Script de Python que se encargará de generar y enviar dos señales por los puertos 4 y 17 del GPIO de la Raspberry PI. La idea es que las señales tengan los siguientes parámetros y características:
+
+- Señal senoidal por el puerto GPIO4 con período de 1s
+- Señal cuadrada por el puerto GPIO17 con periodo de 1s
+
+Una vez definido esto, debemos tomar en cuenta algunas consideraciones. En primera medida, es importante aclarar que los puertos de porpósito general de la RPI pueden tomar solamente valores de 0 o 1, es decir, son **digitales**. Esta característica nos limita en gran medida a cumplir con la consigna, pero existe un método para poder alcanzar el objetivo. Para reconstruir el valor original de la señal codificada es necesario promediar N bits consecutivos.
+
+El script final utilizado para la generación de señales se llama `scripts_for_rpi_v5.py`. Las versiones anteriores del mismo fueron pruebas que fracasaron con el cumplimiento de la consigna, pero para demostrar el trabajo realizado siguen disponibles.
+
+### Arquitectura de comunicación
+
+El script actúa como **servidor** de un socket Unix. Cuando arranca, crea el socket en `/tmp/tmp-gpio.sock` y espera. Al correr `run.sh`, QEMU arranca y se conecta a ese socket como cliente. A partir de ahí, el script le envía comandos del protocolo **qtest** de QEMU, que son escrituras directas en los registros de memoria del chip BCM2837 (el GPIO controller de la Raspberry Pi 3).
+
+### Señal PDM
+
+Es una forma de representar un valor analógico continuo usando únicamente bits 0 y 1, donde la información no está en el ancho de los pulsos sino en la densidad, es decir, cuántos 1's hay en una ventana de tiempo determinada. Esta forma es la que usaremos para representar la onda senoidal.
+
+Para la onda cuadrada, el proceso de generación es más sencillo, simplemente se hará un toggle entre 0 y 1 con período de 1s.
+
+### Consideraciones técnicas
+
+Algunas consideraciones a tener en cuenta en lo que respecta a la generación de señales es que, en lo que refiere a la cantidad de muestras por período de la señal analógica (senoidal), se debe utilizar un valor lo suficientemente alto como para que la señal sea lo mas fiel posible a la representación real de la misma. Ahora, sabiendo esto, las limitaciones de cómputo del emulador QEMU no nos permiten una cantidad de muestras mayores a 400, por lo que el período de la señal deberá de ser 4s como mínimo para una representación aceptable.
+
+### Orden de arranque
+
+1. `python3 signals_for_rpi_v5.py` → crea el socket y bloquea esperando
+2. `./run.sh` → QEMU arranca y conecta al socket
+3. Las señales empiezan a fluir automáticamente
+
+Los valores enviados se imprimirán en la terminal en el que se ejecute el comando, como se ve a continuación.
+
+<img width="452" height="402" alt="imagen" src="https://github.com/user-attachments/assets/ac0428de-bdec-4d66-a73b-f34b2f3242e8" />
+
+---
+
 ## CDD
 
 El driver desarrollado actúa como puente entre la aplicación de usuario y el kernel. Su responsabilidad es exponer un nodo de caracteres en `/dev`, seleccionar cuál de las dos señales GPIO se va a leer y devolver el valor leído en un formato simple de texto.
@@ -334,7 +371,6 @@ Vemos como se actualiza el gráfico:
 
 <img width="1004" height="744" alt="image" src="https://github.com/user-attachments/assets/b6c22aad-5298-4434-b1a5-dd64bc7c0c7b" />
 
-
 ### Detalles de implementación
 
 La app usa un hilo secundario para evitar bloquear la interfaz gráfica. Ese hilo:
@@ -361,6 +397,34 @@ La app no conoce detalles internos del kernel ni del hardware GPIO. Su única de
 - y repetir el proceso cada segundo.
 
 Eso hace que la app sea independiente del mecanismo interno usado por el driver para llegar al hardware.
+
+---
+
+## Prueba conjunta
+
+Para finalizar con el apartado práctico, se realizó una prueba utilizando la generación de señales, el CDD y la aplicación de usuario en conjunto para comprobar el correcto funcionamiento del sistema.
+
+### Terminal 1 — Generador de señales
+```bash
+python3 signals_for_rpi_v5.py
+```
+
+### Terminal 2 — QEMU
+```bash
+./run.sh
+```
+
+### Terminal 3 — SSH dentro de la Raspberry Pi simulada
+```bash
+ssh pi@localhost -p 50022
+sudo make load
+python3 app.py
+```
+Finalmente, la generación de señales se puede ver a continuación, donde se muesta la señal cuadrada y la senoidal por separado.
+
+<img width="1001" height="732" alt="Captura desde 2026-05-29 22-10-55" src="https://github.com/user-attachments/assets/15304adb-a1b1-4bb7-9080-5a43b4055db6" />
+
+<img width="997" height="737" alt="Captura desde 2026-05-30 01-41-49" src="https://github.com/user-attachments/assets/aeee7c41-727e-4c61-a551-2178beec33b1" />
 
 ---
 
